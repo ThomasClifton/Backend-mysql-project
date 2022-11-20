@@ -27,8 +27,8 @@ CREATE TABLE category (
 CREATE TABLE project_category (
   project_id INT NOT NULL,
   category_id INT NOT NULL,
-  FOREIGN KEY project_id REFERENCES project(project_id) ON DELETE CASCADE,
-  FOREIGN KEY category_id REFERENCES category(category_id) ON DELETE CASCADE,
+  FOREIGN KEY (project_id) REFERENCES project(project_id) ON DELETE CASCADE,
+  FOREIGN KEY (category_id) REFERENCES category(category_id) ON DELETE CASCADE,
   UNIQUE KEY (project_id, category_id)
 );
 
@@ -50,3 +50,28 @@ CREATE TABLE material (
   PRIMARY KEY (material_id),
   FOREIGN KEY (project_id) REFERENCES project(project_id) ON DELETE CASCADE
 );
+
+insert into project (project_name, estimated_hours, actual_hours, difficulty, notes)
+values ('Door Hangers', 4.0, 3.0, 3, 'Hang the door using hinges from Home Depot');
+
+INSERT INTO category (category_name) VALUES ('Doors and Windows');
+
+INSERT INTO category (category_name) VALUES ('Repairs');
+
+INSERT INTO material (project_id, material_name, num_required)
+values (1, '2-inch screws', 20);
+
+INSERT INTO material (project_id, material_name, num_required)
+values (1, 'Hollow core door', 1);
+
+INSERT INTO step (project_id, step_text, step_order)
+values (1, 'Screw door hangers on the top and bottom of each side of the door frame', 1);
+
+INSERT INTO step (project_id, step_text, step_order)
+values (1, 'Screw door hangers on the top and bottom of each side of the door', 2);
+
+INSERT INTO project_category (project_id, category_id)
+values (1, 1);
+
+INSERT INTO project_category (project_id, category_id)
+values (1, 2);

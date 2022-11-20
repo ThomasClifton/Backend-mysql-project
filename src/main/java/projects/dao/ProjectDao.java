@@ -24,6 +24,11 @@ public class ProjectDao extends DaoBase {
   private static final String PROJECT_CATEGORY_TABLE = "project_category";
   private static final String STEP_TABLE = "step";
 
+  /**
+   * Inserts a new project into the project table
+   * @param project Project
+   * @return Project object with auto assigned projectId
+   */
   public Project insertProject(Project project) {
     // @formatter:off
     String sql = ""
@@ -62,6 +67,10 @@ public class ProjectDao extends DaoBase {
     }
   }
 
+  /**
+   * Returns a List of all projects in the project table
+   * @return List of Project
+   */
   public List<Project> fetchAllProjects() {
     // @formatter:off
     String sql = ""
@@ -92,6 +101,11 @@ public class ProjectDao extends DaoBase {
     }
   }
 
+  /**
+   * Returns Project from project table based on projectId
+   * @param projectId Integer
+   * @return Project
+   */
   public Optional<Project> fetchProjectById(Integer projectId) {
     String sql = "SELECT * FROM " + PROJECT_TABLE + " WHERE project_id = ?";
 
@@ -131,6 +145,13 @@ public class ProjectDao extends DaoBase {
     }
   }
 
+  /**
+   * Returns a list of materials from material table by projectId
+   * @param conn Connection
+   * @param projectId Integer
+   * @return List of Material
+   * @throws SQLException
+   */
   private List<Material> fetchMaterialsForProject(Connection conn, Integer projectId)
       throws SQLException {
     // @formatter:off
@@ -151,6 +172,13 @@ public class ProjectDao extends DaoBase {
     }
   }
   
+  /**
+   * Returns a list of steps from step table by projectId
+   * @param conn Connection
+   * @param projectId Integer
+   * @return List of Step
+   * @throws SQLException
+   */
   private List<Step> fetchStepsForProject(Connection conn, Integer projectId)
       throws SQLException {
     // @formatter:off
@@ -171,6 +199,13 @@ public class ProjectDao extends DaoBase {
     }
   }
   
+  /**
+   * Returns a list of categories from category table by projectId
+   * @param conn Connection
+   * @param projectId Integer
+   * @return List of Category
+   * @throws SQLException
+   */
   private List<Category> fetchCategoriesForProject(Connection conn, Integer projectId)
       throws SQLException {
     // @formatter:off
@@ -189,6 +224,80 @@ public class ProjectDao extends DaoBase {
         }
         return categories;
       }
+    }
+  }
+
+  /**
+   * Updates project in project table and returns true if one line is modified
+   * @param project Project
+   * @return boolean: true if 1 line modified, false otherwise
+   */
+  public boolean modifyProjectDetails(Project project) {
+    // @formatter:off
+    String sql = ""
+        + "UPDATE " + PROJECT_TABLE + " SET "
+        + "project_name = ?, "
+        + "estimated_hours = ?, "
+        + "actual_hours = ?, "
+        + "difficulty = ?, "
+        + "notes = ? "
+        + "WHERE project_id = ?";
+    // @formatter:on
+    
+    try (Connection conn = DbConnection.getConnection()) {
+      startTransaction(conn);
+
+      try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        setParameter(stmt, 1, project.getProjectName(), String.class);
+        setParameter(stmt, 2, project.getEstimatedHours(), BigDecimal.class);
+        setParameter(stmt, 3, project.getActualHours(), BigDecimal.class);
+        setParameter(stmt, 4, project.getDifficulty(), Integer.class);
+        setParameter(stmt, 5, project.getNotes(), String.class);
+        setParameter(stmt, 6, project.getProjectId(), Integer.class);
+
+        boolean updated = stmt.executeUpdate() == 1;
+        commitTransaction(conn);
+        return updated;
+      }
+      catch (Exception e) {
+        rollbackTransaction(conn);
+        throw new DbException(e);
+      }
+    }
+    catch (SQLException e) {
+      throw new DbException(e);
+    }
+  }
+
+  /**
+   * Deletes project in project table and returns true if one line is deleted
+   * @param projectId Integer
+   * @return boolean: true if 1 line modified, false otherwise
+   */
+  public boolean deleteProject(Integer projectId) {
+ // @formatter:off
+    String sql = ""
+        + "DELETE FROM " + PROJECT_TABLE + " "
+        + "WHERE project_id = ?";
+    // @formatter:on
+    
+    try (Connection conn = DbConnection.getConnection()) {
+      startTransaction(conn);
+
+      try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        setParameter(stmt, 1, projectId, Integer.class);
+
+        boolean deleted = stmt.executeUpdate() == 1;
+        commitTransaction(conn);
+        return deleted;
+      }
+      catch (Exception e) {
+        rollbackTransaction(conn);
+        throw new DbException(e);
+      }
+    }
+    catch (SQLException e) {
+      throw new DbException(e);
     }
   }
 }
